@@ -1,0 +1,22 @@
+{
+  "name": "Golden Boys MMN Trophy",
+  "short_name": "GoldenBoys",
+  "description": "Team Registration and Administration for MMN Golden Boys Tournament",
+  "start_url": "/GoldenBoys_MMN_Trophy/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#005BEA",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "GoldenBoys.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "GoldenBoys.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    }
+  ]
+}
