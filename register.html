@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Team Registration</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+.header-banner {
+    background: linear-gradient(90deg, #005BEA, #00C6FB);
+    padding: 20px;
+    text-align: center;
+}
+.header-logo {
+    width: 120px;
+    border-radius: 10px;
+}
+.player-card {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    margin-bottom: 15px;
+}
+.counter-box {
+    background: #e8f3ff;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body class="bg-light">
+
+<!-- HEADER -->
+<div class="header-banner text-white">
+    <img src="GoldenBoys.jpg" class="header-logo mb-2">
+    <h2>MMN Golden Boys Champions League</h2>
+</div>
+
+<div class="container my-4">
+
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white text-center">
+      <h4>Team Registration</h4>
+    </div>
+
+    <div class="card-body">
+      <form id="teamForm">
+
+        <!-- TEAM DETAILS -->
+        <h5>Team Details</h5>
+
+        <select class="form-select mb-2" id="teamName" required>
+          <option value="">Select Team</option>
+        </select>
+
+        <input class="form-control mb-2" id="captainName" placeholder="Captain Name" required>
+        <input class="form-control mb-2" id="captainMobile" placeholder="Captain Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g,'').slice(0,10);" required>
+
+        <select class="form-select mb-2" id="paymentMode" onchange="togglePaymentFields()">
+          <option value="Cash">Cash</option>
+          <option value="Online">Online</option>
+        </select>
+
+        <input class="form-control mb-2" id="paymentAmount" placeholder="Enter Payment Amount (Rs.)">
+
+        <p id="paymentMsg" class="text-danger small" style="display:none;">
+          *** Please attach a payment screenshot for Online mode.
+        </p>
+
+        <div id="paymentScreenshotDiv" style="display:none;">
+          <input type="file" class="form-control mb-2" id="paymentScreenshot">
+        </div>
+
+        <hr>
+
+        <!-- PLAYER SECTION -->
+        <h5>Players</h5>
+
+        <div class="counter-box mb-3">
+            Players Added: <span id="playerCount">0</span> / 15
+        </div>
+
+        <div id="playerForms"></div>
+
+        <button type="button" class="btn btn-primary w-100" onclick="addPlayerForm()">➕ Add Player</button>
+
+        <button type="button" class="btn btn-success w-100 mt-4" onclick="submitTeam()">Submit Team</button>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+const apiURL = "https://script.google.com/macros/s/AKfycbwxmyNE0hsdZaWynzebm1enPzssfdtqox0whmy_ZbuBBP2K1R0JF13JVV-UHkvxY5HRJQ/exec";
+let playerCount = 0;
+const maxPlayers = 15;
+
+// Convert image to Base64
+function fileToBase64(file) {
+  return new Promise((resolve) => {
+    if (!file) return resolve("");
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+// Show/hide payment fields
+function togglePaymentFields() {
+  if (paymentMode.value === "Online") {
+    paymentMsg.style.display = "block";
+    paymentScreenshotDiv.style.display = "block";
+  } else {
+    paymentMsg.style.display = "none";
+    paymentScreenshotDiv.style.display = "none";
+  }
+}
+
+// Load team dropdown
+async function loadTeams() {
+  const res = await fetch(apiURL + "?action=getTeams");
+  const teams = await res.json();
+  const ddl = document.getElementById("teamName");
+  
+  document.getElementById("teamName").onchange = loadPlayerCount;
+  document.getElementById("teamName").onchange = onTeamSelect;
+  
+  ddl.innerHTML = `<option value="">Select Team</option>`;
+  teams.forEach(t => {
+    let o = document.createElement("option");
+    o.value = t;
+    o.textContent = t;
+    ddl.appendChild(o);
+  });
+}
+loadTeams();
+
+// Add player form card
+function addPlayerForm() {
+  if (playerCount >= maxPlayers) return alert("Max 15 players allowed");
+  playerCount++;
+  document.getElementById("playerCount").innerText = playerCount;
+
+  const div = document.createElement("div");
+  div.className = "player-card";
+
+  div.innerHTML = `
+    <h6>Player ${playerCount}</h6>
+    <input class="form-control mb-2 p_name" placeholder="Player Name" required>
+    <input class="form-control mb-2 p_age" type="number" placeholder="Age" required>
+    <input class="form-control mb-2 p_mobile" placeholder="Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g,'').slice(0,10);" required>
+    <input class="form-control mb-2 p_aadhaar" placeholder="Aadhaar" oninput="formatAadhaar(this)" required>
+    <input type="file" class="form-control mb-3 p_img">
+
+    <button type="button" class="btn btn-success w-100" onclick="savePlayer(this)">Save Player</button>
+  `;
+
+  document.getElementById("playerForms").appendChild(div);
+}
+
+// Save player -> Google Sheet + Drive
+async function savePlayer(btn) {
+
+  const card = btn.closest(".player-card");
+
+  const file = card.querySelector(".p_img").files[0];
+  const base64 = await fileToBase64(file);
+
+  const player = {
+    name: card.querySelector(".p_name").value,
+    age: card.querySelector(".p_age").value,
+    mobile: card.querySelector(".p_mobile").value,
+    aadhaar: card.querySelector(".p_aadhaar").value,
+    imageBase64: base64
+  };
+  
+	// Validate mobile number (10 digits)
+	if (!/^[0-9]{10}$/.test(card.querySelector(".p_mobile").value)) {
+	  alert("Enter valid 10-digit mobile number");
+	  return;
+	}
+
+	if (!/^\d{4} \d{4} \d{4}$/.test(card.querySelector(".p_aadhaar").value)) {
+	  alert("Aadhaar must be in format XXXX XXXX XXXX");
+	  return;
+	}
+
+  const payload = {
+    type: "player",
+    teamName: teamName.value,
+    captainName: captainName.value,
+    captainMobile: captainMobile.value,
+    paymentMode: paymentMode.value,
+    paymentAmount: paymentAmount.value,
+    player: player
+  };
+
+  await fetch(apiURL, { method: "POST", body: JSON.stringify(payload) });
+  card.remove();
+}
+
+function formatAadhaar(input) {
+  let v = input.value.replace(/\D/g, "").substring(0,12);
+  v = v.replace(/(.{4})/g, "$1 ").trim();
+  input.value = v;
+}
+
+async function loadPlayerCount() {
+    const team = teamName.value;
+    if (!team) return;
+
+    const res = await fetch(apiURL + "?action=getPlayerCount&team=" + encodeURIComponent(team));
+    const data = await res.json();
+
+    document.getElementById("playerCount").innerText = data.count;
+}
+
+async function onTeamSelect() {
+    const team = teamName.value;
+    if (!team) return;
+
+    // Fetch basic captain info
+    const infoRes = await fetch(apiURL + "?action=getTeamBasicInfo&team=" + encodeURIComponent(team));
+    const info = await infoRes.json();
+
+    // Auto-fill values
+    captainName.value = info.captainName || "";
+    captainMobile.value = info.captainMobile || "";
+    paymentMode.value = info.paymentMode || "Cash";
+    paymentAmount.value = info.paymentAmount || "";
+
+    // Update UI visibility based on payment mode
+    togglePaymentFields();
+
+    // Load player count
+    loadPlayerCount();
+}
+
+// Final submit
+async function submitTeam() {
+
+	  let screenshotBase64 = "";
+	  
+	  if (paymentMode.value === "Online" && !paymentScreenshot.files[0]) {
+		alert("Upload payment screenshot!");
+		return;
+	  }
+	  const f = paymentScreenshot.files[0];
+	  screenshotBase64 = await fileToBase64(f);
+
+  const payload = {
+    type: "teamSubmit",
+    teamName: teamName.value,
+    captainName: captainName.value,
+    captainMobile: captainMobile.value,
+    paymentMode: paymentMode.value,
+    paymentAmount: paymentAmount.value,
+    paymentScreenshotBase64: screenshotBase64
+  };
+
+  await fetch(apiURL, { method: "POST", body: JSON.stringify(payload) });
+
+  alert("Team Successfully Registered!");
+  location.href = "success.html";
+}
+</script>
+
+</body>
+</html>

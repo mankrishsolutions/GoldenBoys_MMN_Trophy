@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Login</title>
+</head>
+<body>
+
+<!-- TOP HEADER WITH LOGO -->
+<div class="header-banner d-flex flex-column align-items-center justify-content-center text-white">
+    <img src="GoldenBoys.jpg" class="header-logo mb-2">
+    <h2 class="m-0 fw-bold">MMN Golden Boys Champions League</h2>
+</div>
+<style>
+.header-banner {
+    background: linear-gradient(90deg, #005BEA, #00C6FB);
+    padding: 20px;
+    text-align: center;
+}
+.header-logo {
+    width: 120px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.4);
+}
+</style>
+
+<div style="max-width:400px;margin:auto;padding:20px;">
+    <h3>Admin Login</h3>
+    <input id="adminPass" type="password" class="form-control mb-2" placeholder="Enter Password">
+    <button class="btn btn-primary w-100" onclick="login()">Login</button>
+</div>
+
+<script>
+function login() {
+    const pass = document.getElementById("adminPass").value;
+    if (pass === "MMN2025") {
+        localStorage.setItem("adminAuth", "true");
+        window.location = "adminDashboard.html";
+    } else {
+        alert("Incorrect password");
+    }
+}
+</script>
+
+</body>
+</html>
