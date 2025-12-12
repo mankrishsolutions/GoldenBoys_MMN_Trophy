@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="manifest" href="manifest.json">
+
+<meta charset="UTF-8">
+<title>MMN Golden Boys Champions League</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- TOP HEADER WITH LOGO -->
+<div class="header-banner d-flex flex-column align-items-center justify-content-center text-white">
+    <img src="GoldenBoys.jpg" class="header-logo mb-2">
+    <h2 class="m-0 fw-bold">MMN Golden Boys Champions League</h2>
+</div>
+<style>
+.header-banner {
+    background: linear-gradient(90deg, #005BEA, #00C6FB);
+    padding: 20px;
+    text-align: center;
+}
+.header-logo {
+    width: 120px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.4);
+}
+</style>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        text-align: center;
+        background: #f4f6f9;
+    }
+    h1 { color: #333; }
+    button {
+        padding: 15px 25px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 18px;
+        cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+</style>
+</head>
+<body>
+
+<h3>Team Registration Portal – 2025</h3>
+
+<button onclick="location.href='admin.html'">
+    Go to Admin Page
+</button>
+
+<button onclick="location.href='register.html'">
+    Register Your Team
+</button>
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+  }
+</script>
+</body>
+</html>

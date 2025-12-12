@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="manifest" href="manifest.json">
 <meta charset="UTF-8">
 <title>Registration Successful</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -44,6 +45,10 @@
 Team PDF will be shared after verification.</p>
 
 <button onclick="location.href='index.html'">Back to Home</button>
-
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+  }
+</script>
 </body>
 </html>

@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>Admin Login</title>
+<link rel="manifest" href="manifest.json">
 </head>
 <body>
 
@@ -40,6 +41,10 @@ function login() {
     }
 }
 </script>
-
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+  }
+</script>
 </body>
 </html>
