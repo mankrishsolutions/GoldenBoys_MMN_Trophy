@@ -392,56 +392,55 @@ async function submitTeam() {
   location.href = "success.html";
 }
 </script>
-<!-- Service Worker (Auto Update Enabled) -->
-<script>
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("service-worker.js")
-            .then(registration => {
+    <!-- Service Worker (Auto Update Enabled) -->
+	<script>
+	if ("serviceWorker" in navigator) {
+		window.addEventListener("load", () => {
+			navigator.serviceWorker.register("service-worker.js")
+				.then(registration => {
 
-                // 🔄 Check for updates on every load
-                registration.update();
+					// 🔄 Check for updates on every load
+					registration.update();
 
-                // 👂 Listen for new service worker
-                registration.addEventListener("updatefound", () => {
-                    const newWorker = registration.installing;
+					// 👂 Listen for new service worker
+					registration.addEventListener("updatefound", () => {
+						const newWorker = registration.installing;
 
-                    if (newWorker) {
-                        newWorker.addEventListener("statechange", () => {
-                            if (
-                                newWorker.state === "installed" &&
-                                navigator.serviceWorker.controller
-                            ) {
-                                // 🚀 New version available → reload
-                                console.log("🔄 New version available. Reloading...");
-                                window.location.reload();
-                            }
-                        });
-                    }
-                });
-            })
-            .catch(err => {
-                console.error("Service Worker registration failed:", err);
-            });
-    });
-}
-	
-self.addEventListener("install", event => {
-self.skipWaiting();
-});
+						if (newWorker) {
+							newWorker.addEventListener("statechange", () => {
+								if (
+									newWorker.state === "installed" &&
+									navigator.serviceWorker.controller
+								) {
+									// 🚀 New version available → reload
+									console.log("🔄 New version available. Reloading...");
+									window.location.reload();
+								}
+							});
+						}
+					});
+				})
+				.catch(err => {
+					console.error("Service Worker registration failed:", err);
+				});
+		});
+	}
+		
+	self.addEventListener("install", event => {
+	self.skipWaiting();
+	});
 
-self.addEventListener("activate", event => {
-    event.waitUntil(
-        caches.keys().then(keys =>
-            Promise.all(
-                keys.map(key => caches.delete(key))
-            )
-        )
-    );
-    self.clients.claim();
-});
-</script>
-<script src="app.js?v=20251213"></script>
+	self.addEventListener("activate", event => {
+		event.waitUntil(
+			caches.keys().then(keys =>
+				Promise.all(
+					keys.map(key => caches.delete(key))
+				)
+			)
+		);
+		self.clients.claim();
+	});
+	</script>
+	<script src="app.js?v=20251213"></script>
 </body>
 </html>
-
