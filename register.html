@@ -161,7 +161,7 @@ const apiURL = "https://script.google.com/macros/s/AKfycbwE-fiDQn2TzNlDSNLi4m42J
 let playerCount = 0;        // total existing + new
 let savedPlayerCount = 0;  // players already saved
 const maxPlayers = 15;
-
+const errorBox    = card.querySelector(".player-error");
 
 window.addEventListener("load", () => {
     paymentMode.value = "Online";
@@ -307,7 +307,7 @@ function checkPlayerImages(card) {
     const aadhaarFile = card.querySelector(".p_aadhaar_img").files[0];
     const playerFile  = card.querySelector(".p_player_img").files[0];
     const saveBtn     = card.querySelector(".save-player-btn");
-    const errorBox    = card.querySelector(".player-error");
+
 
     if (aadhaarFile && playerFile) {
         saveBtn.disabled = false;
