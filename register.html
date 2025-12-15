@@ -161,7 +161,7 @@ const apiURL = "https://script.google.com/macros/s/AKfycbwE-fiDQn2TzNlDSNLi4m42J
 let playerCount = 0;        // total existing + new
 let savedPlayerCount = 0;  // players already saved
 const maxPlayers = 15;
-const errorBox    = card.querySelector(".player-error");
+
 
 window.addEventListener("load", () => {
     paymentMode.value = "Online";
@@ -308,14 +308,10 @@ function checkPlayerImages(card) {
     const playerFile  = card.querySelector(".p_player_img").files[0];
     const saveBtn     = card.querySelector(".save-player-btn");
 
-
     if (aadhaarFile && playerFile) {
         saveBtn.disabled = false;
-        errorBox.style.display = "none";
     } else {
         saveBtn.disabled = true;
-        errorBox.textContent = "Upload Aadhaar image and Player photo to enable Save.";
-        errorBox.style.display = "block";
     }
 }
 
@@ -326,18 +322,16 @@ async function savePlayer(btn) {
 
   const aadhaarFile = card.querySelector(".p_aadhaar_img").files[0];
   const playerFile  = card.querySelector(".p_player_img").files[0];
-  const errorBox = card.querySelector(".player-error");
+
 
 	// 🔒 Mandatory image validation
 	if (!aadhaarFile) {
-		errorBox.textContent = "Please upload Aadhaar image for the player.";
-		errorBox.style.display = "block";
+		alert("Please upload Aadhaar image for the player");
 		return;
 	}
 
 	if (!playerFile) {
-		errorBox.textContent = "Please upload Player photo.";
-		errorBox.style.display = "block";
+		alert("Please upload Player photo.");
 		return;
 	}
 	
@@ -355,14 +349,12 @@ async function savePlayer(btn) {
   
 	// Validate mobile number (10 digits)
 	if (!/^[0-9]{10}$/.test(card.querySelector(".p_mobile").value)) {
-	  	errorBox.textContent = "Enter valid 10-digit mobile number";
-		errorBox.style.display = "block";
+		alert("Enter valid 10-digit mobile number");
 		return;
 	}
 
 	if (!/^\d{4} \d{4} \d{4}$/.test(card.querySelector(".p_aadhaar").value)) {
-	  	errorBox.textContent = "Aadhaar must be in format XXXX XXXX XXXX";
-		errorBox.style.display = "block";
+		alert("Aadhaar must be in format XXXX XXXX XXXX");
 		return;
 	}
 

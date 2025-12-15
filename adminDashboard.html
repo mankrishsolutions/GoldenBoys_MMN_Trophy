@@ -81,7 +81,7 @@
 
 	<!-- HEADER BANNER -->
 	<div class="header-banner-img">
-		<img src="../banner.jpg" alt="MMN Golden Boys Champions Trophy">
+		<img src="banner.jpg" alt="MMN Golden Boys Champions Trophy">
 	</div>
 
     <!-- BODY -->
@@ -113,8 +113,9 @@
                     <tr>
                         <th>Team</th>
                         <th>Captain</th>
-                        <th>Payment</th>
+                        <th>Payment Status</th>
                         <th>Amount</th>
+						<th>Payment Proof</th>
                         <th>View</th>
                     </tr>
                 </thead>
@@ -152,13 +153,25 @@ async function loadAdmin() {
             <td>${t.teamName}</td>
             <td>${t.captainName}</td>
             <td class="text-center">${paymentBadge}</td>
-            <td class="text-center">${t.paymentAmount}</td>
-            <td class="text-center">
-                <a class="btn btn-primary btn-sm"
-                   href="team-details.html?team=${encodeURIComponent(t.teamName)}">
-                    Open
-                </a>
-            </td>
+			<td class="text-center">${t.paymentAmount}</td>
+
+			<td class="text-center">
+			  ${t.paymentScreenshot
+				? `<a class="btn btn-outline-success btn-sm"
+					 href="${t.paymentScreenshot}"
+					 target="_blank">
+					 View
+				   </a>`
+				: `<span class="text-muted">-</span>`
+			  }
+			</td>
+
+			<td class="text-center">
+			  <a class="btn btn-primary btn-sm"
+				 href="team-details.html?team=${encodeURIComponent(t.teamName)}">
+				 Open
+			  </a>
+			</td>
         `;
         tbody.appendChild(tr);
     });
