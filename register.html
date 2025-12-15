@@ -195,7 +195,6 @@ function isPaymentValid() {
 
 function disablePlayerActions(disable) {
     document.getElementById("addPlayerBtn").disabled = disable;
-    document.getElementById("submitBtn").disabled = disable;
 }
 
 paymentScreenshot.addEventListener("change", () => {
@@ -468,7 +467,7 @@ function updateSubmitButton() {
         paymentScreenshot.files &&
         paymentScreenshot.files.length > 0;
 
-    const playersOk = savedPlayerCount === REQUIRED_PLAYERS;
+    const playersOk = savedPlayerCount === maxPlayers;
 
     if (paymentOk && playersOk) {
         submitBtn.style.display = "block";
