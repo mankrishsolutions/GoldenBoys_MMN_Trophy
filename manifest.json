@@ -6,15 +6,5 @@
   "background_color": "#005BEA",
   "theme_color": "#005BEA",
   "icons": [
-    {
-      "src": "goldenboys.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "goldenboys.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
   ]
 }
