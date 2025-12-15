@@ -11,7 +11,31 @@
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#005BEA">
+	<!-- Header Styles -->
+	<style>
+	.header-banner-img {
+		width: 100%;
+		overflow: hidden;
+		border-radius: 18px 18px 0 0;
+		height: 160px;                 /* fixed container */
+	}
 
+	.header-banner-img img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;             /* smart crop */
+		object-position: center top;   /* IMPORTANT */
+		display: block;
+	}
+
+	/* Mobile */
+	@media (max-width: 576px) {
+		.header-banner-img {
+			height: 110px;
+		}
+	}
+	</style>
+	
     <style>
         body {
             background: #f4f6f9;
@@ -52,12 +76,11 @@
 
 <div class="main-card">
 
-    <!-- HEADER -->
-    <div class="header-banner">
-        <img src="GoldenBoys.jpg" class="header-logo">
-        <h5 class="fw-bold mb-0">MMN Golden Boys</h5>
-        <small>Champions Trophy</small>
-    </div>
+	<!-- HEADER BANNER -->
+	<div class="header-banner-img">
+		<img src="banner.jpeg" alt="MMN Golden Boys Champions Trophy">
+	</div>
+
 
     <!-- BODY -->
     <div class="card-body p-4">
@@ -143,7 +166,6 @@ async function loadTeam() {
                     ? `<a href="${p.aadhaarImage}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>`
                     : "-"}
             </td>
-
             <td class="text-center">
                 ${p.playerImage
                     ? `<a href="${p.playerImage}" target="_blank" class="btn btn-sm btn-outline-success">View</a>`
