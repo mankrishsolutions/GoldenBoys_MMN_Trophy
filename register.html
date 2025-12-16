@@ -102,7 +102,7 @@
         <form id="teamForm">
 
             <!-- TEAM DETAILS -->
-            <h5 class="section-title">Team Details</h5>
+            <h5 class="section-title">Golden Boys - Team Registration Page</h5>
 
             <select class="form-select mb-2" id="teamName" required>
                 <option value="">Select Team</option>
@@ -113,16 +113,14 @@
                    maxlength="10"
                    oninput="this.value = this.value.replace(/[^0-9]/g,'').slice(0,10);"
                    required>
+			
+			<input class="form-control mb-2" id="paymentMode" text="payment Mode" required>
 
-            <select class="form-select mb-2" id="paymentMode" onchange="togglePaymentFields()">
-                <option value="Cash">Cash</option>
-                <option value="Online">Online</option>
-            </select>
 
             <input class="form-control mb-2" id="paymentAmount" placeholder="Enter Payment Amount (₹)">
 
             <p id="paymentMsg" class="text-danger small" style="display:none;">
-                *** Please attach a payment screenshot for Online mode.
+                *** Please attach a payment screenshot for Online mode. Final Registration will only be accepted once the payment screenshot is verified by the Committee!
             </p>
 
             <div id="paymentScreenshotDiv" style="display:none;">
@@ -157,6 +155,10 @@
 			</button>
 
         </form>
+		
+		<div class="footer-text mt-4">
+			© 2026 Golden Boys
+		</div>
     </div>
 </div>
 
@@ -411,8 +413,6 @@ async function onTeamSelect() {
     // Auto-fill values
     captainName.value = info.captainName || "";
     captainMobile.value = info.captainMobile || "";
-    paymentMode.value = info.paymentMode || "Cash";
-    paymentAmount.value = info.paymentAmount || "";
 
     // Update UI visibility based on payment mode
     togglePaymentFields();

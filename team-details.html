@@ -94,10 +94,18 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="fw-bold mb-0" id="teamTitle"></h4>
 
-            <button class="btn btn-outline-secondary btn-sm"
-                    onclick="window.location.assign('adminDashboard.html')">
-                ← Back
-            </button>
+			<!-- RIGHT SIDE BUTTON GROUP -->
+			<div class="d-flex gap-2">
+				<button class="btn btn-outline-secondary btn-sm"
+						onclick="window.location.assign('index.html')">
+					← Back
+				</button>
+
+				<button class="btn btn-light btn-sm btn-logout"
+						onclick="logout()">
+					🚪 Logout
+				</button>
+			</div>
         </div>
 
         <hr>
@@ -108,7 +116,7 @@
             <span id="paymentBox"></span>
         </div>
 
-        <h5 class="mt-4 mb-3">Players</h5>
+        <!-- <h5 class="mt-4 mb-3"></h5> -->
 
         <!-- PLAYERS TABLE -->
         <div class="table-responsive">
@@ -119,7 +127,7 @@
                     <th>Player</th>
                     <th>Age</th>
                     <th>Mobile</th>
-                    <th>Aadhaar</th>
+                    <th>AadhaarNo.</th>
                     <th>Aadhaar Image</th>
                     <th>Player Photo</th>
                 </tr>
@@ -131,6 +139,10 @@
         <button id="pdfBtn" class="btn btn-success mt-3">
             Download Team PDF
         </button>
+		
+		<div class="mt-4 text-muted small">
+            © 2026 Golden Boys
+        </div>
     </div>
 </div>
 
@@ -138,7 +150,7 @@
 const apiURL = "https://script.google.com/macros/s/AKfycbwE-fiDQn2TzNlDSNLi4m42J6f9lZQcoJZ20Kc8fDKJd3ejt8MPhozOXqn3_YRHJ9Ovdw/exec";
 const team = new URLSearchParams(window.location.search).get("team");
 
-document.getElementById("teamTitle").innerText = team;
+document.getElementById("teamTitle").innerText = team + " - Players Details";
 
 async function loadTeam() {
 
