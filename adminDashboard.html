@@ -20,17 +20,42 @@
 	<style>
 	.header-banner-img {
 		width: 100%;
+		height: 160px;
 		overflow: hidden;
 		border-radius: 18px 18px 0 0;
-		height: 160px;                 /* fixed container */
+		position: relative;
 	}
 
+	/* Banner image */
 	.header-banner-img img {
 		width: 100%;
 		height: 100%;
-		object-fit: fill;             /* smart crop */
-		object-position: center top;   /* IMPORTANT */
+		object-fit: fill;
+		object-position: center top;
 		display: block;
+	}
+
+	/* Common style for header buttons */
+	.header-banner-img .header-btn {
+		position: absolute;
+		top: 12px;
+		z-index: 5;
+		background: rgba(255,255,255,0.95);
+		border-radius: 20px;
+		padding: 4px 12px;
+		font-weight: 500;
+		box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+		border: none;
+	}
+
+	/* Back button (left side) */
+	.back-btn {
+		left: 12px;
+	}
+
+	/* Logout button (right side) */
+	.btn-logout {
+		right: 12px;
 	}
 
 	/* Mobile */
@@ -38,7 +63,22 @@
 		.header-banner-img {
 			height: 110px;
 		}
+
+		.header-banner-img .header-btn {
+			top: 8px;
+			font-size: 0.85rem;
+			padding: 3px 10px;
+		}
+
+		.back-btn {
+			left: 8px;
+		}
+
+		.btn-logout {
+			right: 8px;
+		}
 	}
+
 	</style>
 
     <style>
@@ -83,9 +123,20 @@
 <div class="d-flex justify-content-center">
 <div class="main-card">
 
+
 	<!-- HEADER BANNER -->
 	<div class="header-banner-img">
 		<img src="PDFBanner.jpg" alt="MMN Golden Boys Champions Trophy">
+
+		<button class="btn btn-light btn-sm header-btn back-btn"
+				onclick="window.location.assign('index.html')">
+			← Back
+		</button>
+
+		<button class="btn btn-light btn-sm header-btn btn-logout"
+				onclick="logout()">
+			🚪 Logout
+		</button>
 	</div>
 
     <!-- BODY -->
@@ -93,19 +144,6 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
 			<h4 class="fw-bold mb-0">Admin Dashboard</h4>
-
-			<!-- RIGHT SIDE BUTTON GROUP -->
-			<div class="d-flex gap-2">
-				<button class="btn btn-outline-secondary btn-sm"
-						onclick="window.location.assign('index.html')">
-					← Back
-				</button>
-
-				<button class="btn btn-light btn-sm btn-logout"
-						onclick="logout()">
-					🚪 Logout
-				</button>
-			</div>
 		</div>
 
         <hr>
