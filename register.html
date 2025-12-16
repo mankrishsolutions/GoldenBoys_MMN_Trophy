@@ -270,7 +270,7 @@ function togglePaymentFields() {
 
 // Load team dropdown
 async function loadTeams() {
-showLoading()
+showLoading();
   const res = await fetch(apiURL + "?action=getTeams");
   const teams = await res.json();
   const ddl = document.getElementById("teamName");
@@ -285,7 +285,7 @@ showLoading()
     o.textContent = t;
     ddl.appendChild(o);
   });
-hideLoading()
+hideLoading();
 }
 loadTeams();
 

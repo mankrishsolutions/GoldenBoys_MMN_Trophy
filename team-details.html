@@ -220,7 +220,7 @@ const team = new URLSearchParams(window.location.search).get("team");
 document.getElementById("teamTitle").innerText = team + " - Players Details";
 
 async function loadTeam() {
-	showLoading()
+	showLoading();
     // TEAM DETAILS
     const d = await (await fetch(apiURL + "?action=getTeamDetails&team=" + encodeURIComponent(team))).json();
 
@@ -257,7 +257,7 @@ async function loadTeam() {
             </td>
         </tr>`;
     });
-	hideLoading()
+	hideLoading();
 }
 
 loadTeam();

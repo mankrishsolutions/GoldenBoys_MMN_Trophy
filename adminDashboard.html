@@ -200,7 +200,7 @@ function logout() {
 }
 
 async function loadAdmin() {
-	showLoading() 
+	showLoading();
     const res = await fetch(apiURL + "?action=getAllTeamDetails");
     const teams = await res.json();
 
@@ -240,7 +240,7 @@ async function loadAdmin() {
         `;
         tbody.appendChild(tr);
     });
-	hideLoading()
+	hideLoading();
 }
 
 loadAdmin();
