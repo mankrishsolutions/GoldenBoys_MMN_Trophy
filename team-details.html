@@ -167,6 +167,10 @@
             Download Team PDF
         </button>
 		
+	  <div id="loadingOverlay">
+		<img src="PercentLoading.gif" alt="Loading...">
+	  </div>
+	  
 		<div class="mt-4 text-muted small">
             © 2026 Golden Boys
         </div>
@@ -180,7 +184,7 @@ const team = new URLSearchParams(window.location.search).get("team");
 document.getElementById("teamTitle").innerText = team + " - Players Details";
 
 async function loadTeam() {
-
+	showLoading()
     // TEAM DETAILS
     const d = await (await fetch(apiURL + "?action=getTeamDetails&team=" + encodeURIComponent(team))).json();
 
@@ -217,6 +221,7 @@ async function loadTeam() {
             </td>
         </tr>`;
     });
+	hideLoading()
 }
 
 loadTeam();
@@ -225,6 +230,18 @@ document.getElementById("pdfBtn").onclick = async () => {
     const j = await (await fetch(apiURL + "?action=generateTeamPdf&team=" + encodeURIComponent(team))).json();
     window.open(j.pdfUrl, "_blank");
 };
+</script>
+
+<!-- Show Loading / Hide Loading -->
+<script>
+function showLoading() {
+  document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
+
 </script>
 
 <!-- Service Worker (Auto Update Enabled) -->

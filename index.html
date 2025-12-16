@@ -5,20 +5,11 @@
     <title>MMN Golden Boys Champions League</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#005BEA">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Golden Boys">
-    <link rel="apple-touch-icon" href="GoldenBoys.jpg">
-
     <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 	<link rel="icon" type="image/png" sizes="32x32" href="icon-192.png">
 	<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-	<link rel="icon" href="favicon.ico" type="image/png">
 	
 	<!-- Header Styles -->
 	<style>
@@ -126,55 +117,6 @@
         </div>
     </div>
 
-    <!-- Service Worker (Auto Update Enabled) -->
-	<script>
-	if ("serviceWorker" in navigator) {
-		window.addEventListener("load", () => {
-			navigator.serviceWorker.register("service-worker.js")
-				.then(registration => {
-
-					// 🔄 Check for updates on every load
-					registration.update();
-
-					// 👂 Listen for new service worker
-					registration.addEventListener("updatefound", () => {
-						const newWorker = registration.installing;
-
-						if (newWorker) {
-							newWorker.addEventListener("statechange", () => {
-								if (
-									newWorker.state === "installed" &&
-									navigator.serviceWorker.controller
-								) {
-									// 🚀 New version available → reload
-									console.log("🔄 New version available. Reloading...");
-									window.location.reload();
-								}
-							});
-						}
-					});
-				})
-				.catch(err => {
-					console.error("Service Worker registration failed:", err);
-				});
-		});
-	}
-		
-	self.addEventListener("install", event => {
-	self.skipWaiting();
-	});
-
-	self.addEventListener("activate", event => {
-		event.waitUntil(
-			caches.keys().then(keys =>
-				Promise.all(
-					keys.map(key => caches.delete(key))
-				)
-			)
-		);
-		self.clients.claim();
-	});
-	</script>
 	<script src="app.js?v=20251213"></script>
 </body>
 </html>
