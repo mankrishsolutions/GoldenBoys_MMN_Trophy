@@ -96,6 +96,23 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             margin-bottom: 15px;
         }
+		
+		#loadingOverlay {
+		  position: fixed;
+		  top: 0; left: 0;
+		  width: 100%; height: 100%;
+		  background: rgba(255,255,255,0.7);
+		  display: none;
+		  align-items: center;
+		  justify-content: center;
+		  z-index: 9999;
+		}
+
+		#loadingOverlay img {
+		  width: 100px;
+		  height: 100px;
+		}
+
     </style>
 </head>
 <body>
@@ -175,9 +192,367 @@
 		<div class="footer-text mt-4">
 			© 2026 Golden Boys
 		</div>
+		
+		<div id="loadingOverlay">
+			<img src="PercentLoading.gif" alt="Loading...">
+		 </div>
     </div>
 </div>
 
-	<script src="app.js?v=20251213"></script>
+<script>
+const apiURL = "https://script.google.com/macros/s/AKfycbwE-fiDQn2TzNlDSNLi4m42J6f9lZQcoJZ20Kc8fDKJd3ejt8MPhozOXqn3_YRHJ9Ovdw/exec";
+let playerCount = 0;        // total existing + new
+let savedPlayerCount = 0;  // players already saved
+const maxPlayers = 15;
+
+
+window.addEventListener("load", () => {
+    paymentMode.value = "Online";
+    paymentMode.disabled = true;
+
+    paymentAmount.value = "3500";
+    paymentAmount.disabled = true;
+
+    togglePaymentFields();
+    disablePlayerActions(true);
+});
+
+function isPaymentValid() {
+    if (paymentMode.value !== "Online") {
+        alert("Only Online payment is allowed.");
+        return false;
+    }
+
+    if (paymentAmount.value !== "3500") {
+        alert("Payment amount must be exactly ₹3500.");
+        return false;
+    }
+
+    if (!paymentScreenshot.files || !paymentScreenshot.files[0]) {
+        alert("Please upload payment screenshot.");
+        return false;
+    }
+
+    return true;
+}
+
+function disablePlayerActions(disable) {
+    document.getElementById("addPlayerBtn").disabled = disable;
+}
+
+paymentScreenshot.addEventListener("change", () => {
+    if (isPaymentValid()) {
+        disablePlayerActions(false);
+    }
+    updateSubmitButton();
+});
+
+// Convert image to Base64
+function fileToBase64(file) {
+  return new Promise((resolve) => {
+    if (!file) return resolve("");
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+// Show/hide payment fields
+function togglePaymentFields() {
+  if (paymentMode.value === "Online") {
+    paymentMsg.style.display = "block";
+    paymentScreenshotDiv.style.display = "block";
+  } else {
+    paymentMsg.style.display = "none";
+    paymentScreenshotDiv.style.display = "none";
+  }
+}
+
+// Load team dropdown
+async function loadTeams() {
+showLoading()
+  const res = await fetch(apiURL + "?action=getTeams");
+  const teams = await res.json();
+  const ddl = document.getElementById("teamName");
+  
+  document.getElementById("teamName").onchange = loadPlayerCount;
+  document.getElementById("teamName").onchange = onTeamSelect;
+  
+  ddl.innerHTML = `<option value="">Select Team</option>`;
+  teams.forEach(t => {
+    let o = document.createElement("option");
+    o.value = t;
+    o.textContent = t;
+    ddl.appendChild(o);
+  });
+hideLoading()
+}
+loadTeams();
+
+// Add player form card
+function addPlayerForm() {
+  if (playerCount >= maxPlayers) return alert("Max 15 players allowed");
+	playerCount++;
+	document.getElementById("playerCount").innerText = playerCount;
+
+  const div = document.createElement("div");
+  div.className = "player-card";
+
+  div.innerHTML = `
+    <h6>Player ${playerCount}</h6>
+    <input class="form-control mb-2 p_name" placeholder="Player Name" required>
+    <input class="form-control mb-2 p_age" type="number" placeholder="Age" required>
+    <input class="form-control mb-2 p_mobile" placeholder="Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g,'').slice(0,10);" required>
+    <input class="form-control mb-2 p_aadhaar" placeholder="Aadhaar" oninput="formatAadhaar(this)" required>
+    <label class="form-label">Aadhaar Image</label>
+	<input type="file" class="form-control mb-2 p_aadhaar_img" onchange="previewAdhaarImg(this)">
+	<img class="img-thumbnail mb-3" style="display:none;width:80px;height:80px;">
+
+	<label class="form-label">Player Photo</label>
+	<input type="file" class="form-control mb-2 p_player_img" onchange="previewPlayerImg(this)">
+	<img class="img-thumbnail mb-3" style="display:none;width:80px;height:80px;">
+
+    <button type="button" class="btn btn-success w-100 save-player-btn" disabled onclick="savePlayer(this)"> Save Player </button>
+  `;
+
+  document.getElementById("playerForms").appendChild(div);
+}
+
+function previewPlayerImg(input) {
+    const img = input.nextElementSibling;
+    const card = input.closest(".player-card");
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        img.src = e.target.result;
+        img.style.display = "block";
+        checkPlayerImages(card);
+    };
+    reader.readAsDataURL(file);
+}
+
+function previewAdhaarImg(input) {
+    const img = input.nextElementSibling;
+    const card = input.closest(".player-card");
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        img.src = e.target.result;
+        img.style.display = "block";
+        checkPlayerImages(card);
+    };
+    reader.readAsDataURL(file);
+}
+
+function checkPlayerImages(card) {
+    const aadhaarFile = card.querySelector(".p_aadhaar_img").files[0];
+    const playerFile  = card.querySelector(".p_player_img").files[0];
+    const saveBtn     = card.querySelector(".save-player-btn");
+
+    if (aadhaarFile && playerFile) {
+        saveBtn.disabled = false;
+    } else {
+        saveBtn.disabled = true;
+    }
+}
+
+// Save player -> Google Sheet + Drive
+async function savePlayer(btn) {
+	showLoading();
+  const card = btn.closest(".player-card");
+
+  const aadhaarFile = card.querySelector(".p_aadhaar_img").files[0];
+  const playerFile  = card.querySelector(".p_player_img").files[0];
+
+
+	// 🔒 Mandatory image validation
+	if (!aadhaarFile) {
+		alert("Please upload Aadhaar image for the player");
+		return;
+	}
+
+	if (!playerFile) {
+		alert("Please upload Player photo.");
+		return;
+	}
+	
+	const aadhaarBase64 = await compressImage(aadhaarFile);
+	const playerBase64  = await compressImage(playerFile);
+
+  const player = {
+    name: card.querySelector(".p_name").value,
+    age: card.querySelector(".p_age").value,
+    mobile: card.querySelector(".p_mobile").value,
+    aadhaar: card.querySelector(".p_aadhaar").value,
+    aadhaarBase64: aadhaarBase64,
+    playerImageBase64: playerBase64
+  };
+  
+	// Validate mobile number (10 digits)
+	if (!/^[0-9]{10}$/.test(card.querySelector(".p_mobile").value)) {
+		alert("Enter valid 10-digit mobile number");
+		return;
+	}
+
+	if (!/^\d{4} \d{4} \d{4}$/.test(card.querySelector(".p_aadhaar").value)) {
+		alert("Aadhaar must be in format XXXX XXXX XXXX");
+		return;
+	}
+
+  const payload = {
+    type: "player",
+    teamName: teamName.value,
+    captainName: captainName.value,
+    captainMobile: captainMobile.value,
+    paymentMode: paymentMode.value,
+    paymentAmount: paymentAmount.value,
+    player: player
+  };
+
+	await fetch(apiURL, { method: "POST", body: JSON.stringify(payload) });
+
+	savedPlayerCount++;
+	updateSubmitButton();
+
+	card.remove();
+	hideLoading();
+}
+
+function formatAadhaar(input) {
+  let v = input.value.replace(/\D/g, "").substring(0,12);
+  v = v.replace(/(.{4})/g, "$1 ").trim();
+  input.value = v;
+}
+
+async function loadPlayerCount() {
+    const team = teamName.value;
+    if (!team) return;
+
+    const res = await fetch(apiURL + "?action=getPlayerCount&team=" + encodeURIComponent(team));
+    const data = await res.json();
+
+    playerCount = data.count;
+    savedPlayerCount = data.count;
+
+    document.getElementById("playerCount").innerText = playerCount;
+    updateSubmitButton();
+}
+
+async function onTeamSelect() {
+	showLoading();
+    const team = teamName.value;
+    if (!team) return;
+
+    // Fetch basic captain info
+    const infoRes = await fetch(apiURL + "?action=getTeamBasicInfo&team=" + encodeURIComponent(team));
+    const info = await infoRes.json();
+
+    // Auto-fill values
+    captainName.value = info.captainName || "";
+    captainMobile.value = info.captainMobile || "";
+
+    // Update UI visibility based on payment mode
+    togglePaymentFields();
+
+    // Load player count
+    loadPlayerCount();
+	hideLoading();
+}
+
+// Final submit
+async function submitTeam() {
+	showLoading();
+  let screenshotBase64 = "";
+	  if (savedPlayerCount !== maxPlayers) {
+		alert("Exactly 15 players must be registered before submitting.");
+		return;
+	  }
+
+	  if (paymentMode.value === "Online" && !paymentScreenshot.files[0]) {
+		alert("Upload payment screenshot!");
+		return;
+	  }
+	  const f = paymentScreenshot.files[0];
+	  screenshotBase64 = await fileToBase64(f);
+
+  const payload = {
+    type: "teamSubmit",
+    teamName: teamName.value,
+    captainName: captainName.value,
+    captainMobile: captainMobile.value,
+    paymentMode: paymentMode.value,
+    paymentAmount: paymentAmount.value,
+    paymentScreenshotBase64: screenshotBase64
+  };
+
+  await fetch(apiURL, { method: "POST", body: JSON.stringify(payload) });
+  hideLoading();
+  alert("Team Successfully Registered!");
+  location.href = "success.html";
+  
+}
+
+function updateSubmitButton() {
+
+    const submitBtn = document.getElementById("submitBtn");
+
+    const paymentOk =
+        paymentMode.value === "Online" &&
+        paymentAmount.value === "3500" &&
+        paymentScreenshot.files &&
+        paymentScreenshot.files.length > 0;
+
+    const playersOk = savedPlayerCount === maxPlayers;
+
+    if (paymentOk && playersOk) {
+        submitBtn.style.display = "block";
+    } else {
+        submitBtn.style.display = "none";
+    }
+}
+
+function compressImage(file, maxWidth = 800, quality = 0.7) {
+    return new Promise(resolve => {
+        const img = new Image();
+        const reader = new FileReader();
+
+        reader.onload = e => {
+            img.src = e.target.result;
+        };
+
+        img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const scale = maxWidth / img.width;
+            canvas.width = maxWidth;
+            canvas.height = img.height * scale;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(blob => {
+                const r = new FileReader();
+                r.onload = () => resolve(r.result);
+                r.readAsDataURL(blob);
+            }, "image/jpeg", quality);
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
+
+function showLoading() {
+  document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
+</script>
+
 </body>
 </html>
