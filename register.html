@@ -189,6 +189,18 @@
 
         </form>
 		
+		<div class="text-center mb-2">
+			<button class="btn btn-outline-secondary btn-sm"
+					onclick="togglePlayersList()"
+					id="togglePlayersBtn">
+				Show Team Players
+			</button>
+		</div>
+
+		<div id="teamPlayersBox" class="border rounded p-2" style="display:none;">
+			<ul id="teamPlayersList" class="mb-0"></ul>
+		</div>
+		
 		<div class="footer-text mt-4">
 			© 2026 Golden Boys
 		</div>
@@ -204,7 +216,8 @@ const apiURL = "https://script.google.com/macros/s/AKfycbwE-fiDQn2TzNlDSNLi4m42J
 let playerCount = 0;        // total existing + new
 let savedPlayerCount = 0;  // players already saved
 const maxPlayers = 15;
-
+let playersLoaded = false;
+let iconPlayerExists = false;
 
 window.addEventListener("load", () => {
     paymentMode.value = "Online";
@@ -275,8 +288,8 @@ showLoading();
   const teams = await res.json();
   const ddl = document.getElementById("teamName");
   
-  document.getElementById("teamName").onchange = loadPlayerCount;
-  document.getElementById("teamName").onchange = onTeamSelect;
+  document.getElementById("teamName").addEventListener("change", loadPlayerCount);
+  document.getElementById("teamName").addEventListener("change", onTeamSelect);
   
   ddl.innerHTML = `<option value="">Select Team</option>`;
   teams.forEach(t => {
@@ -287,35 +300,100 @@ showLoading();
   });
 hideLoading();
 }
+
 loadTeams();
 
+// Check if Icon Player already exists for this team
+async function checkIconPlayerStatus() {
+    iconPlayerExists = false;
+
+    const team = teamName.value;
+    if (!team) return;
+
+    const players = await (
+        await fetch(apiURL + "?action=getTeamPlayers&team=" + encodeURIComponent(team))
+    ).json();
+
+    iconPlayerExists = players.some(p =>
+        p.playerName && p.playerName.includes(" - Icon")
+    );
+}
+
 // Add player form card
-function addPlayerForm() {
-  if (playerCount >= maxPlayers) return alert("Max 15 players allowed");
-	playerCount++;
-	document.getElementById("playerCount").innerText = playerCount;
+async function addPlayerForm() {
 
-  const div = document.createElement("div");
-  div.className = "player-card";
+    // 🔁 If an existing player form is present → save it first
+    const existingCard = document.querySelector(".player-card");
 
-  div.innerHTML = `
-    <h6>Player ${playerCount}</h6>
-    <input class="form-control mb-2 p_name" placeholder="Player Name" required>
-    <input class="form-control mb-2 p_age" type="number" placeholder="Age" required>
-    <input class="form-control mb-2 p_mobile" placeholder="Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g,'').slice(0,10);" required>
-    <input class="form-control mb-2 p_aadhaar" placeholder="Aadhaar" oninput="formatAadhaar(this)" required>
-    <label class="form-label">Aadhaar Image</label>
-	<input type="file" class="form-control mb-2 p_aadhaar_img" onchange="previewAdhaarImg(this)">
-	<img class="img-thumbnail mb-3" style="display:none;width:80px;height:80px;">
+    if (existingCard) {
+        const fakeBtn = { closest: () => existingCard }; // 👈 trick to reuse savePlayer
+        await savePlayer(fakeBtn);
+    }
 
-	<label class="form-label">Player Photo</label>
-	<input type="file" class="form-control mb-2 p_player_img" onchange="previewPlayerImg(this)">
-	<img class="img-thumbnail mb-3" style="display:none;width:80px;height:80px;">
+    // ⛔ Stop if max reached AFTER save
+    if (playerCount >= maxPlayers) {
+        alert("Max 15 players allowed");
+        return;
+    }
+	
 
-    <button type="button" class="btn btn-success w-100 save-player-btn" disabled onclick="savePlayer(this)"> Save Player </button>
-  `;
+    // ➕ Now add new empty form
+    playerCount++;
+    document.getElementById("playerCount").innerText = playerCount;
 
-  document.getElementById("playerForms").appendChild(div);
+    const div = document.createElement("div");
+    div.className = "player-card";
+
+    div.innerHTML = `
+        <h6>Player ${playerCount}</h6>
+
+        <div class="d-flex align-items-center gap-2 mb-2">
+			<input class="form-control p_name" placeholder="Player Name" required>
+
+			${
+				iconPlayerExists
+				? `` 
+				: `
+				<div class="form-check">
+					<input class="form-check-input p_icon" type="checkbox">
+					<label class="form-check-label small">Icon</label>
+				</div>
+				`
+			}
+		</div>
+		
+        <input class="form-control mb-2 p_age" type="number" placeholder="Age" required>
+
+        <input class="form-control mb-2 p_mobile"
+               placeholder="Mobile" maxlength="10"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10);"
+               required>
+
+        <input class="form-control mb-2 p_aadhaar"
+               placeholder="Aadhaar"
+               oninput="formatAadhaar(this)"
+               required>
+
+        <label class="form-label">Aadhaar Image</label>
+        <input type="file" class="form-control mb-2 p_aadhaar_img" onchange="previewAdhaarImg(this)">
+        <img class="img-thumbnail mb-3" style="display:none;width:80px;height:80px;">
+
+        <label class="form-label">Player Photo</label>
+        <input type="file" class="form-control mb-2 p_player_img" onchange="previewPlayerImg(this)">
+        <img class="img-thumbnail mb-3" style="display:none;width:80px;height:80px;">
+    `;
+
+    document.getElementById("playerForms").appendChild(div);
+}
+
+function updateAddPlayerButton() {
+    const btn = document.getElementById("addPlayerBtn");
+
+    if (playerCount >= 1 && playerCount < maxPlayers) {
+        btn.disabled = false;   // ✅ enable
+    } else {
+        btn.disabled = true;    // ❌ disable
+    }
 }
 
 function previewPlayerImg(input) {
@@ -362,11 +440,14 @@ function checkPlayerImages(card) {
 
 // Save player -> Google Sheet + Drive
 async function savePlayer(btn) {
-	showLoading();
+  showLoading();
+  playersLoaded = false;
+
   const card = btn.closest(".player-card");
 
   const aadhaarFile = card.querySelector(".p_aadhaar_img").files[0];
   const playerFile  = card.querySelector(".p_player_img").files[0];
+
 
 
 	// 🔒 Mandatory image validation
@@ -383,8 +464,17 @@ async function savePlayer(btn) {
 	const aadhaarBase64 = await compressImage(aadhaarFile);
 	const playerBase64  = await compressImage(playerFile);
 
-  const player = {
-    name: card.querySelector(".p_name").value,
+
+	let playerName = card.querySelector(".p_name").value.trim();
+
+	const iconCheckbox = card.querySelector(".p_icon");
+	if (iconCheckbox && iconCheckbox.checked) {
+		playerName += " - Icon ✈️";
+		iconPlayerExists = true;   // lock for future players
+	}
+	
+    const player = {
+    name: playerName,
     age: card.querySelector(".p_age").value,
     mobile: card.querySelector(".p_mobile").value,
     aadhaar: card.querySelector(".p_aadhaar").value,
@@ -403,6 +493,7 @@ async function savePlayer(btn) {
 		return;
 	}
 
+
   const payload = {
     type: "player",
     teamName: teamName.value,
@@ -417,7 +508,15 @@ async function savePlayer(btn) {
 
 	savedPlayerCount++;
 	updateSubmitButton();
-
+	
+	// 🔄 Refresh team players list if visible
+	const playersBox = document.getElementById("teamPlayersBox");
+	if (playersBox && playersBox.style.display !== "none") {
+		await loadTeamPlayersNames();
+		playersLoaded = true;
+	}
+	
+	
 	card.remove();
 	hideLoading();
 }
@@ -444,6 +543,8 @@ async function loadPlayerCount() {
 
 async function onTeamSelect() {
 	showLoading();
+	playersLoaded = false;
+	togglePlayersList()
     const team = teamName.value;
     if (!team) return;
 
@@ -460,6 +561,8 @@ async function onTeamSelect() {
 
     // Load player count
     loadPlayerCount();
+	updateAddPlayerButton();
+	await checkIconPlayerStatus();
 	hideLoading();
 }
 
@@ -541,6 +644,52 @@ function compressImage(file, maxWidth = 800, quality = 0.7) {
         };
 
         reader.readAsDataURL(file);
+    });
+}
+
+async function togglePlayersList() {
+
+    const box = document.getElementById("teamPlayersBox");
+    const btn = document.getElementById("togglePlayersBtn");
+
+    if (box.style.display === "none") {
+        box.style.display = "block";
+        btn.innerText = "Hide Team Players";
+
+        if (!playersLoaded) {
+            await loadTeamPlayersNames();
+            playersLoaded = true;
+        }
+    } else {
+        box.style.display = "none";
+        btn.innerText = "Show Team Players";
+    }
+}
+
+async function loadTeamPlayersNames() {
+
+    const list = document.getElementById("teamPlayersList");
+    list.innerHTML = `<li class="text-muted">Loading...</li>`;
+
+    const team = teamName.value;
+    if (!team) {
+        list.innerHTML = `<li class="text-muted">Select a team first</li>`;
+        return;
+    }
+
+    const players = await (
+        await fetch(apiURL + "?action=getTeamPlayers&team=" + encodeURIComponent(team))
+    ).json();
+
+    list.innerHTML = "";
+
+    if (!players.length) {
+        list.innerHTML = `<li class="text-muted">No players added yet</li>`;
+        return;
+    }
+
+    players.forEach(p => {
+        list.innerHTML += `<li>${p.playerName}</li>`;
     });
 }
 
