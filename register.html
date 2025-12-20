@@ -392,13 +392,14 @@ function updateAddPlayerButton() {
     const Addbtn = document.getElementById("addPlayerBtn");
 	const Submitbtn = document.getElementById("submitBtn");
 
-    if (playerCount >= 1 && playerCount <= 14) {
+    if (playerCount >= 1 && playerCount <= 13) {
         Addbtn.disabled = false;   // ✅ enable
     } else {
         Addbtn.disabled = true;    // ❌ disable
     }
     if (playerCount >= 14) {
         Submitbtn.style.display = "block";   // 🚫 Hide Submitbtn Player
+		
     } else {
         Submitbtn.style.display = "none";  // ✅ Show Submitbtn Player
     }
@@ -615,11 +616,6 @@ async function submitTeam() {
     await savePlayer(fakeBtn);
   }
 
-  // 🔒 Final validation
-  if (savedPlayerCount !== 14) {
-    alert("This is the last player. Team registration will complete here.");
-  }
-
   const payload = {
     type: "teamSubmit",
     teamName: teamName.value,
@@ -637,7 +633,7 @@ async function submitTeam() {
 
   const result = await res.text();
 
-
+  alert("Last player saved sucessfully. Team registration completed here!");
 
   if (result === "TEAM_SUBMITTED") {
     // ✅ DIRECT SUCCESS PAGE
