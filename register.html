@@ -186,6 +186,7 @@
 					style="display:none">
 				✅ Submit Team
 			</button>
+			
 
         </form>
 		
@@ -340,6 +341,7 @@ async function addPlayerForm() {
     // ➕ Now add new empty form
     playerCount++;
     document.getElementById("playerCount").innerText = playerCount;
+	updateAddPlayerButton();
 
     const div = document.createElement("div");
     div.className = "player-card";
@@ -387,12 +389,18 @@ async function addPlayerForm() {
 }
 
 function updateAddPlayerButton() {
-    const btn = document.getElementById("addPlayerBtn");
+    const Addbtn = document.getElementById("addPlayerBtn");
+	const Submitbtn = document.getElementById("submitBtn");
 
-    if (playerCount >= 1 && playerCount < maxPlayers) {
-        btn.disabled = false;   // ✅ enable
+    if (playerCount >= 1 && playerCount <= 14) {
+        Addbtn.disabled = false;   // ✅ enable
     } else {
-        btn.disabled = true;    // ❌ disable
+        Addbtn.disabled = true;    // ❌ disable
+    }
+    if (playerCount >= 14) {
+        Submitbtn.style.display = "block";   // 🚫 Hide Submitbtn Player
+    } else {
+        Submitbtn.style.display = "none";  // ✅ Show Submitbtn Player
     }
 }
 
@@ -429,12 +437,12 @@ function previewAdhaarImg(input) {
 function checkPlayerImages(card) {
     const aadhaarFile = card.querySelector(".p_aadhaar_img").files[0];
     const playerFile  = card.querySelector(".p_player_img").files[0];
-    const saveBtn     = card.querySelector(".save-player-btn");
-
+	const Addbtn = document.getElementById("addPlayerBtn");
+	
     if (aadhaarFile && playerFile) {
-        saveBtn.disabled = false;
+        Addbtn.disabled = false;
     } else {
-        saveBtn.disabled = true;
+        Addbtn.disabled = true;
     }
 }
 
@@ -508,6 +516,7 @@ async function savePlayer(btn) {
 
 	savedPlayerCount++;
 	updateSubmitButton();
+	updateAddPlayerButton();
 	
 	// 🔄 Refresh team players list if visible
 	const playersBox = document.getElementById("teamPlayersBox");
@@ -542,61 +551,101 @@ async function loadPlayerCount() {
 }
 
 async function onTeamSelect() {
-	showLoading();
-	playersLoaded = false;
-	togglePlayersList()
+    showLoading();
+    playersLoaded = false;
+
     const team = teamName.value;
-    if (!team) return;
+    if (!team) {
+        hideLoading();
+        return;
+    }
 
-    // Fetch basic captain info
-    const infoRes = await fetch(apiURL + "?action=getTeamBasicInfo&team=" + encodeURIComponent(team));
-    const info = await infoRes.json();
+    try {
+        // ✅ Run APIs in parallel
+        const [infoRes, countRes] = await Promise.all([
+            fetch(apiURL + "?action=getTeamBasicInfo&team=" + encodeURIComponent(team)),
+            fetch(apiURL + "?action=getPlayerCount&team=" + encodeURIComponent(team))
+        ]);
 
-    // Auto-fill values
-    captainName.value = info.captainName || "";
-    captainMobile.value = info.captainMobile || "";
+        const info = await infoRes.json();
+        const countData = await countRes.json();
 
-    // Update UI visibility based on payment mode
-    togglePaymentFields();
+        // Fill captain info
+        captainName.value = info.captainName || "";
+        captainMobile.value = info.captainMobile || "";
 
-    // Load player count
-    loadPlayerCount();
-	updateAddPlayerButton();
-	await checkIconPlayerStatus();
-	hideLoading();
+        // Player count
+        playerCount = countData.count;
+        savedPlayerCount = countData.count;
+        document.getElementById("playerCount").innerText = playerCount;
+
+        togglePaymentFields();
+        updateAddPlayerButton();
+        updateSubmitButton();
+
+        // ✅ Icon check ONLY if needed
+        await checkIconPlayerStatus();
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to load team data");
+    }
+
+    hideLoading();
 }
+
 
 // Final submit
 async function submitTeam() {
-	showLoading();
-  let screenshotBase64 = "";
-	  if (savedPlayerCount !== maxPlayers) {
-		alert("Exactly 15 players must be registered before submitting.");
-		return;
-	  }
+  showLoading();
 
-	  if (paymentMode.value === "Online" && !paymentScreenshot.files[0]) {
-		alert("Upload payment screenshot!");
-		return;
-	  }
-	  const f = paymentScreenshot.files[0];
-	  screenshotBase64 = await fileToBase64(f);
+  // 🔒 Validate screenshot FIRST
+  if (!paymentScreenshot.files || !paymentScreenshot.files[0]) {
+    alert("Please upload payment screenshot!");
+    hideLoading();
+    return;
+  }
+
+  // ✅ Convert screenshot BEFORE any save
+  const screenshotBase64 = await fileToBase64(paymentScreenshot.files[0]);
+
+  // 🔁 Now save last unsaved player (if any)
+  const existingCard = document.querySelector(".player-card");
+  if (existingCard) {
+    const fakeBtn = { closest: () => existingCard };
+    await savePlayer(fakeBtn);
+  }
+
+  // 🔒 Final validation
+  if (savedPlayerCount !== 14) {
+    alert("This is the last player. Team registration will complete here.");
+  }
 
   const payload = {
     type: "teamSubmit",
     teamName: teamName.value,
-    captainName: captainName.value,
+    captainName: captainName.value.trim(),
     captainMobile: captainMobile.value,
     paymentMode: paymentMode.value,
     paymentAmount: paymentAmount.value,
     paymentScreenshotBase64: screenshotBase64
   };
 
-  await fetch(apiURL, { method: "POST", body: JSON.stringify(payload) });
+  const res = await fetch(apiURL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+
+  const result = await res.text();
+
   hideLoading();
-  alert("Team Successfully Registered!");
-  location.href = "success.html";
-  
+
+  if (result === "TEAM_SUBMITTED") {
+    // ✅ DIRECT SUCCESS PAGE
+    window.location.replace("success.html");
+  } else {
+    alert("Submit failed: " + result);
+  }
 }
 
 function updateSubmitButton() {
@@ -609,13 +658,9 @@ function updateSubmitButton() {
         paymentScreenshot.files &&
         paymentScreenshot.files.length > 0;
 
-    const playersOk = savedPlayerCount === maxPlayers;
+    const playersOk = savedPlayerCount === 14; // ✅ FIXED
 
-    if (paymentOk && playersOk) {
-        submitBtn.style.display = "block";
-    } else {
-        submitBtn.style.display = "none";
-    }
+    submitBtn.style.display = (paymentOk && playersOk) ? "block" : "none";
 }
 
 function compressImage(file, maxWidth = 800, quality = 0.7) {
