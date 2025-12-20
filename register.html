@@ -602,7 +602,6 @@ async function submitTeam() {
   // 🔒 Validate screenshot FIRST
   if (!paymentScreenshot.files || !paymentScreenshot.files[0]) {
     alert("Please upload payment screenshot!");
-    hideLoading();
     return;
   }
 
@@ -638,7 +637,7 @@ async function submitTeam() {
 
   const result = await res.text();
 
-  hideLoading();
+
 
   if (result === "TEAM_SUBMITTED") {
     // ✅ DIRECT SUCCESS PAGE
@@ -646,6 +645,7 @@ async function submitTeam() {
   } else {
     alert("Submit failed: " + result);
   }
+    hideLoading();
 }
 
 function updateSubmitButton() {
