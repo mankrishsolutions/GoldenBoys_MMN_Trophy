@@ -615,7 +615,8 @@ async function submitTeam() {
     const fakeBtn = { closest: () => existingCard };
     await savePlayer(fakeBtn);
   }
-
+  showLoading();
+  
   const payload = {
     type: "teamSubmit",
     teamName: teamName.value,
