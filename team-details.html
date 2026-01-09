@@ -214,9 +214,6 @@ async function loadTeam() {
     document.getElementById("captainBox").innerHTML =
         `Captain: ${d.captainName} (${d.captainMobile})`;
 
-    document.getElementById("paymentBox").innerHTML =
-        `Payment: ${d.paymentStatus} | ₹${d.paymentAmount}`;
-
     // PLAYERS
     const players = await (await fetch(apiURL + "?action=getTeamPlayers&team=" + encodeURIComponent(team))).json();
 
@@ -244,7 +241,17 @@ async function loadTeam() {
             </td>
         </tr>`;
     });
-	hideLoading();
+	
+	// ✅ PAYMENT STATUS LOGIC
+    if (players.length === 15) {
+        document.getElementById("paymentBox").innerHTML =
+            `Payment: ${d.paymentStatus} | ₹${d.paymentAmount}`;
+    } else {
+        document.getElementById("paymentBox").innerHTML =
+            `Payment: Unpaid`;
+    }
+
+    hideLoading();
 }
 
 loadTeam();
