@@ -152,9 +152,10 @@
 
             <input class="form-control mb-2" id="paymentAmount" placeholder="Enter Payment Amount (₹)">
 
-            <p id="paymentMsg" class="text-danger small" style="display:none;">
-                *** Please attach a payment screenshot for Online mode. Final Registration will only be accepted once the payment screenshot is verified by the Committee!
-            </p>
+			<p id="paymentMsg" class="text-danger small">
+				*** Please attach a payment screenshot on Final Submit Button. 
+				Final Registration will only be accepted once the payment screenshot is verified by the Committee!
+			</p>
 
             <div id="paymentScreenshotDiv" style="display:none;">
                 <input type="file" class="form-control mb-2" id="paymentScreenshot">
@@ -227,7 +228,6 @@ window.addEventListener("load", () => {
     paymentAmount.value = "3500";
     paymentAmount.disabled = true;
 
-    togglePaymentFields();
     disablePlayerActions(true);
 });
 
@@ -388,22 +388,45 @@ async function addPlayerForm() {
     document.getElementById("playerForms").appendChild(div);
 }
 
-function updateAddPlayerButton() {
-    const Addbtn = document.getElementById("addPlayerBtn");
-	const Submitbtn = document.getElementById("submitBtn");
+	function updateAddPlayerButton() {
 
-    if (playerCount >= 1 && playerCount <= 13) {
-        Addbtn.disabled = false;   // ✅ enable
-    } else {
-        Addbtn.disabled = true;    // ❌ disable
-    }
-    if (playerCount >= 14) {
-        Submitbtn.style.display = "block";   // 🚫 Hide Submitbtn Player
-		
-    } else {
-        Submitbtn.style.display = "none";  // ✅ Show Submitbtn Player
-    }
-}
+		const addBtn     = document.getElementById("addPlayerBtn");
+		const submitBtn  = document.getElementById("submitBtn");
+		const paymentDiv = document.getElementById("paymentScreenshotDiv");
+
+		/**
+		 * savedPlayerCount = players already saved in sheet
+		 * playerCount      = saved + currently open form
+		 */
+
+		// Case 1: Less than 14 players saved → normal flow
+		if (savedPlayerCount < 14) {
+			addBtn.style.display = "block";
+			addBtn.disabled = false;
+
+			submitBtn.style.display = "none";
+			paymentDiv.style.display = "none";
+			return;
+		}
+
+		// Case 2: 14 players saved, 15th player form OPEN
+		if (savedPlayerCount === 14 && playerCount === 15) {
+			addBtn.style.display = "none";          // ❌ no more players
+			submitBtn.style.display = "block";     // ✅ final submit
+			paymentDiv.style.display = "block";    // ✅ show screenshot
+			return;
+		}
+
+		// Case 3: 14 players saved, but 15th form NOT added yet
+		if (savedPlayerCount === 14 && playerCount === 14) {
+			addBtn.style.display = "block";         // allow adding 15th
+			addBtn.disabled = false;
+
+			submitBtn.style.display = "none";
+			paymentDiv.style.display = "none";
+			return;
+		}
+	}
 
 function previewPlayerImg(input) {
     const img = input.nextElementSibling;
@@ -457,8 +480,6 @@ async function savePlayer(btn) {
   const aadhaarFile = card.querySelector(".p_aadhaar_img").files[0];
   const playerFile  = card.querySelector(".p_player_img").files[0];
 
-
-
 	// 🔒 Mandatory image validation
 	if (!aadhaarFile) {
 		alert("Please upload Aadhaar image for the player");
@@ -502,7 +523,6 @@ async function savePlayer(btn) {
 		return;
 	}
 
-
   const payload = {
     type: "player",
     teamName: teamName.value,
@@ -525,7 +545,6 @@ async function savePlayer(btn) {
 		await loadTeamPlayersNames();
 		playersLoaded = true;
 	}
-	
 	
 	card.remove();
 	hideLoading();
@@ -580,7 +599,7 @@ async function onTeamSelect() {
         savedPlayerCount = countData.count;
         document.getElementById("playerCount").innerText = playerCount;
 
-        togglePaymentFields();
+		togglePaymentFields(); 
         updateAddPlayerButton();
         updateSubmitButton();
 
@@ -594,7 +613,6 @@ async function onTeamSelect() {
 
     hideLoading();
 }
-
 
 // Final submit
 async function submitTeam() {
@@ -649,15 +667,13 @@ function updateSubmitButton() {
 
     const submitBtn = document.getElementById("submitBtn");
 
-    const paymentOk =
-        paymentMode.value === "Online" &&
-        paymentAmount.value === "3500" &&
-        paymentScreenshot.files &&
-        paymentScreenshot.files.length > 0;
+    // Only after 14 players
+    if (savedPlayerCount !== 14) {
+        submitBtn.style.display = "none";
+        return;
+    }
 
-    const playersOk = savedPlayerCount === 14; // ✅ FIXED
-
-    submitBtn.style.display = (paymentOk && playersOk) ? "block" : "none";
+    submitBtn.style.display = "block";
 }
 
 function compressImage(file, maxWidth = 800, quality = 0.7) {
@@ -734,7 +750,6 @@ async function loadTeamPlayersNames() {
         list.innerHTML += `<li>${p.playerName}</li>`;
     });
 }
-
 
 function showLoading() {
   document.getElementById('loadingOverlay').style.display = 'flex';
