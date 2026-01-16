@@ -495,7 +495,8 @@ async function savePlayer(btn) {
 	const playerBase64  = await compressImage(playerFile);
 
 
-	let playerName = card.querySelector(".p_name").value.trim();
+	let rawName = card.querySelector(".p_name").value.trim();
+	let playerName = toProperCase(rawName);
 
 	const iconCheckbox = card.querySelector(".p_icon");
 	if (iconCheckbox && iconCheckbox.checked) {
@@ -548,6 +549,12 @@ async function savePlayer(btn) {
 	
 	card.remove();
 	hideLoading();
+}
+
+function toProperCase(str) {
+  return str
+    .toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase());
 }
 
 function formatAadhaar(input) {
