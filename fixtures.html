@@ -163,8 +163,7 @@ input[type="date"], input[type="time"] {
 <script>
 const apiURL = "https://script.google.com/macros/s/AKfycbwE-fiDQn2TzNlDSNLi4m42J6f9lZQcoJZ20Kc8fDKJd3ejt8MPhozOXqn3_YRHJ9Ovdw/exec";
 let teamMap = {};
-const isAdmin = new URLSearchParams(location.search).get("admin") === "YES";
-const adminKey = new URLSearchParams(location.search).get("key") || "";
+
 
 // Load Teams
 async function loadTeams() {
@@ -214,34 +213,15 @@ async function loadFixtures() {
         const tbody = document.getElementById(`tbody-${currentWeek.replace(' ','')}`);
 
         tbody.innerHTML += `
-            <tr>
-                <td>${m.MatchNo}</td>
-                <td><span class="group-badge">${m.Group}</span></td>
-                <td>${teamMap[m.TeamA] || m.TeamA}</td>
-                <td class="vs">VS</td>
-                <td>${teamMap[m.TeamB] || m.TeamB}</td>
-				<td>
-				  ${
-					isAdmin
-					? `<input type="date"
-							  class="form-control form-control-sm"
-							  value="${toISODate(m.MatchDate)}"
-							  onchange="saveMatch(${m.RowNo}, this.value, '${m.MatchTime || ''}')">`
-					: (m.MatchDate || '-')
-				  }
-				</td>
-
-				<td>
-				  ${
-					isAdmin
-					? `<input type="time"
-							  class="form-control form-control-sm"
-							  value="${toInputTime(m.MatchTime)}"
-							  onchange="saveMatch(${m.RowNo}, '${m.MatchDate || ''}', this.value)">`
-					: (m.MatchTime || '-')
-				  }
-				</td>
-            </tr>
+		  <tr>
+			<td>${m.MatchNo}</td>
+			<td><span class="group-badge">${m.Group}</span></td>
+			<td>${teamMap[m.TeamA] || m.TeamA}</td>
+			<td class="vs">VS</td>
+			<td>${teamMap[m.TeamB] || m.TeamB}</td>
+			<td>${m.Date || '-'}</td>
+			<td>${m.Time || '-'}</td>
+		  </tr>
         `;
     });
 	hideLoading();
@@ -257,43 +237,6 @@ async function loadFixtures() {
 	
 })();
 
-async function saveMatch(rowNo, date, time) {
-
-  showLoading();
-
-  await fetch(apiURL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "updateMatch",
-      adminKey: adminKey,
-      rowNo: rowNo,
-      matchDate: date,
-      matchTime: time
-    })
-  });
-
-  hideLoading();
-}
-
-function toISODate(dateStr) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  if (isNaN(d)) return "";
-  return d.toISOString().split("T")[0]; // YYYY-MM-DD
-}
-
-function toInputTime(timeStr) {
-  if (!timeStr) return "";
-  // "08:00 AM" → "08:00"
-  const [time, meridian] = timeStr.split(" ");
-  let [h, m] = time.split(":");
-  h = parseInt(h, 10);
-
-  if (meridian === "PM" && h !== 12) h += 12;
-  if (meridian === "AM" && h === 12) h = 0;
-
-  return String(h).padStart(2, "0") + ":" + m;
-}
 
 function showLoading() {
   const overlay = document.getElementById('loadingOverlay');
