@@ -103,6 +103,23 @@ table td {
     width: 100px;
     height: 100px;
 }
+
+.fixtures-bg {
+    background: 
+        linear-gradient(
+            rgba(255,255,255,0.25),
+            rgba(255,255,255,0.25)
+        ),
+        url('BG2.jpg');
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    padding: 16px;
+    border-radius: 14px;
+}
+
 </style>
 </head>
 
@@ -126,7 +143,9 @@ table td {
             Starts from <b>15 Feb 2026</b>
         </p>
 
-        <div id="fixturesContainer"></div>
+        <div class="fixtures-bg">
+			<div id="fixturesContainer"></div>
+		</div>
 
         <div class="text-center text-muted small mt-4">
             © 2026 Golden Boys
@@ -208,11 +227,17 @@ async function loadFixtures() {
     hideLoading();
 }
 
-// INIT
 (async function(){
-    showLoading();
-    await loadTeams();
-    await loadFixtures();
+    try {
+        showLoading();
+        await loadTeams();
+        await loadFixtures();
+    } catch (err) {
+        console.error("Init failed:", err);
+        alert("Failed to load fixtures. Please refresh.");
+    } finally {
+        hideLoading();
+    }
 })();
 
 function showLoading() {
