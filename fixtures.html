@@ -138,7 +138,12 @@ table td {
 
     <!-- BODY -->
     <div class="card-body p-4">
-        <h5>📅 Match Fixtures</h5>
+		<div class="d-flex justify-content-between align-items-center mb-2">
+			<h5 class="mb-0">📅 Match Fixtures</h5>
+
+			<select id="weekFilter" class="form-select form-select-sm" style="width:160px">
+			</select>
+		</div>
         <p class="text-muted small mb-3">
             Starts from <b>15 Feb 2026</b>
         </p>
@@ -162,6 +167,8 @@ table td {
 <script>
 const apiURL = "https://script.google.com/macros/s/AKfycbwE-fiDQn2TzNlDSNLi4m42J6f9lZQcoJZ20Kc8fDKJd3ejt8MPhozOXqn3_YRHJ9Ovdw/exec";
 let teamMap = {};
+let allFixtures = [];
+let selectedWeek = "";
 
 // Load Teams
 async function loadTeams() {
@@ -173,14 +180,40 @@ async function loadTeams() {
 // Load Fixtures (READ ONLY)
 async function loadFixtures() {
     const res = await fetch(apiURL + "?action=getMatchFixtures");
-    const data = await res.json();
+    allFixtures = await res.json();
+
+    populateWeekDropdown(allFixtures);
+    renderFixtures("Week 1");
+}
+
+function populateWeekDropdown(data) {
+    const weekSelect = document.getElementById("weekFilter");
+    const weeks = [...new Set(data.map(m => m.Week))];
+
+    weeks.forEach(w => {
+        const opt = document.createElement("option");
+        opt.value = w;
+        opt.textContent = w;
+        weekSelect.appendChild(opt);
+    });
+
+    weekSelect.addEventListener("change", () => {
+        renderFixtures(weekSelect.value);
+    });
+}
+
+function renderFixtures(selectedWeek) {
 
     const container = document.getElementById("fixturesContainer");
     container.innerHTML = "";
 
     let currentWeek = "";
 
-    data.forEach(m => {
+    const filteredData = selectedWeek === "ALL"
+        ? allFixtures
+        : allFixtures.filter(m => m.Week === selectedWeek);
+
+    filteredData.forEach(m => {
 
         if (m.Week !== currentWeek) {
             currentWeek = m.Week;
@@ -226,6 +259,8 @@ async function loadFixtures() {
 
     hideLoading();
 }
+
+
 
 (async function(){
     try {
