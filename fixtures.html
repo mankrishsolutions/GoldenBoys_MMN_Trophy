@@ -45,6 +45,79 @@
 }
 </style>
 
+<!-- ===== MOBILE IPL STYLE CARDS ===== -->
+<style>
+.fixture-card {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+}
+
+.fixture-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.team-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.vs-badge {
+    font-weight: 700;
+    color: #dc3545;
+    margin: 0 6px;
+}
+
+.fixture-bottom {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: #6c757d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.result-badge {
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.result-win {
+    background: #d4edda;
+    color: #155724;
+}
+
+.result-tie {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.result-nr {
+    background: #cce5ff;
+    color: #004085;
+}
+
+/* Hide table on mobile */
+@media (max-width: 768px) {
+    .desktop-table {
+        display: none;
+    }
+}
+
+/* Hide cards on desktop */
+@media (min-width: 769px) {
+    .mobile-cards {
+        display: none;
+    }
+}
+</style>
+
 <!-- ===== PAGE STYLES ===== -->
 <style>
 body {
@@ -219,10 +292,11 @@ function renderFixtures(selectedWeek) {
             currentWeek = m.Week;
             const weekId = currentWeek.replace(/\s+/g, '');
 
-			
             container.innerHTML += `
                 <div class="week-title">${currentWeek}</div>
-                <div class="table-responsive mb-3">
+
+                <!-- DESKTOP TABLE -->
+                <div class="table-responsive mb-3 desktop-table">
                     <table class="table table-bordered table-sm mb-0">
                         <thead>
                             <tr>
@@ -233,34 +307,51 @@ function renderFixtures(selectedWeek) {
                                 <th>Team B</th>
                                 <th>Date</th>
                                 <th>Time</th>
-								<th>Winner</th>
+                                <th>Winner</th>
                             </tr>
                         </thead>
                         <tbody id="tbody-${weekId}"></tbody>
                     </table>
                 </div>
+
+                <!-- MOBILE CARDS -->
+                <div class="mobile-cards" id="cards-${weekId}"></div>
             `;
         }
 
-        const tbody = document.getElementById(
-            `tbody-${currentWeek.replace(/\s+/g,'')}`
-        );
+        const weekId = currentWeek.replace(/\s+/g, '');
+        const tbody = document.getElementById(`tbody-${weekId}`);
+        const cardsContainer = document.getElementById(`cards-${weekId}`);
 
-			let resultText = "-";
+        // Normalize winner code
+        const winnerCode = (m.Winner || "").toString().trim().toUpperCase();
 
-			if (m.Winner === "A") {
-				resultText = teamMap[m.TeamA] || "Team A";
-			}
-			else if (m.Winner === "B") {
-				resultText = teamMap[m.TeamB] || "Team B";
-			}
-			else if (m.Winner === "T") {
-				resultText = "Tie";
-			}
-			else if (m.Winner === "NR") {
-				resultText = "No Result";
-			}
-			
+        let resultText = "-";
+        let resultHTML = "";
+        let showDateTime = true;
+
+        if (winnerCode === "A") {
+            resultText = teamMap[m.TeamA] || m.TeamA;
+            resultHTML = `<span class="result-badge result-win">🏆 ${resultText}</span>`;
+            showDateTime = false;
+        }
+        else if (winnerCode === "B") {
+            resultText = teamMap[m.TeamB] || m.TeamB;
+            resultHTML = `<span class="result-badge result-win">🏆 ${resultText}</span>`;
+            showDateTime = false;
+        }
+        else if (winnerCode === "T") {
+            resultText = "Tie";
+            resultHTML = `<span class="result-badge result-tie">Match Tied</span>`;
+            showDateTime = false;
+        }
+        else if (winnerCode === "NR") {
+            resultText = "No Result";
+            resultHTML = `<span class="result-badge result-nr">No Result</span>`;
+            showDateTime = false;
+        }
+
+        // ===== DESKTOP TABLE =====
         tbody.innerHTML += `
             <tr>
                 <td>${m.MatchNo}</td>
@@ -268,11 +359,33 @@ function renderFixtures(selectedWeek) {
                 <td>${teamMap[m.TeamA] || m.TeamA}</td>
                 <td class="vs">VS</td>
                 <td>${teamMap[m.TeamB] || m.TeamB}</td>
-				<td>${m.Date || '-'}</td>
-				<td>${m.Time || '-'}</td>
-				<td class="fw-semibold text-success">${resultText}</td>
+                <td>${m.Date || '-'}</td>
+                <td>${m.Time || '-'}</td>
+                <td class="fw-semibold text-success">${resultText}</td>
             </tr>
         `;
+
+        // ===== MOBILE CARD =====
+        if (cardsContainer) {
+            cardsContainer.innerHTML += `
+                <div class="fixture-card">
+                    <div class="fixture-top">
+                        <div class="team-name">${teamMap[m.TeamA] || m.TeamA}</div>
+                        <div class="vs-badge">VS</div>
+                        <div class="team-name">${teamMap[m.TeamB] || m.TeamB}</div>
+                    </div>
+
+                    <div class="fixture-bottom">
+                        ${
+                            showDateTime
+                            ? `<span>📅 ${m.Date || '-'} &nbsp; ⏰ ${m.Time || '-'}</span>`
+                            : resultHTML
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
     });
 
     hideLoading();
