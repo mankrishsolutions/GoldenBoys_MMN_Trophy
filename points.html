@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Points Table – MMN Golden Boys</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<meta charset="UTF-8">
+	<title>Points Table – MMN Golden Boys</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+	
+	<link rel="icon" type="image/png" sizes="32x32" href="icon-192.png">
+	<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 
 <style>
 	body{
@@ -88,60 +94,81 @@
 	  width: 100px;
 	  height: 100px;
 	}
-		
-		
+	
+	.footer-text {
+		font-size: 13px;
+		color: #888;
+		margin-top: 10px;
+		text-align: center;
+	}
+	
+	/* 🏆 Top 2 Qualified Teams */
+	.top-qualified {
+		background: linear-gradient(90deg, #fff8dc, #ffe082);
+		font-weight: 700;
+	}
+
+	/* Trophy Icon */
+	.trophy-icon {
+		color: #d4af37;
+		margin-left: 6px;
+		font-size: 16px;
+	}
 </style>
 </head>
 <body>
 
+
 <div class="card main-card">
 
-<div class="header-banner-img">
-    <img src="banner.jpg">
-</div>
-
-<div class="card-body p-2">
-
-<h6 class="text-center mb-2 fw-bold">🏆 Points Table</h6>
-
-<div class="text-center mb-2 group-buttons">
-    <button id="btnA" class="btn btn-warning btn-sm" onclick="loadGroup('A')">Group A</button>
-    <button id="btnB" class="btn btn-outline-warning btn-sm" onclick="loadGroup('B')">Group B</button>
-</div>
-
-<div class="table-responsive">
-	<table class="table table-bordered text-center align-middle mb-2">
-		<thead>
-			<tr>
-			<th>Sl</th>
-			<th>Team</th>
-			<th>P</th>
-			<th>W</th>
-			<th>L</th>
-			<th>NR</th>
-			<th>Pts</th>
-			<th>NRR</th>
-			</tr>
-		</thead>
-	<tbody id="pointsBody"></tbody>
-	</table>
-</div>
-
-	<div>
-		<h6 class="fw-bold text-success mb-2 text-center">Qualified (Semis)</h6>
-		<ul id="qualifiedList" class="list-group"></ul>
+	<div class="header-banner-img">
+		<img src="banner.jpg">
 	</div>
+
+	<div class="card-body p-2">
+
+		<h6 class="text-center mb-2 fw-bold">🏆 Points Table</h6>
+
+		<div class="text-center mb-2 group-buttons">
+			<button id="btnA" class="btn btn-warning btn-sm" onclick="loadGroup('A')">Group A</button>
+			<button id="btnB" class="btn btn-outline-warning btn-sm" onclick="loadGroup('B')">Group B</button>
+		</div>
+
+		<div class="table-responsive">
+			<table class="table table-bordered text-center align-middle mb-2">
+				<thead>
+					<tr>
+					<th>Sl</th>
+					<th>Team</th>
+					<th>P</th>
+					<th>W</th>
+					<th>L</th>
+					<th>NR</th>
+					<th>Pts</th>
+					<th>NRR</th>
+					</tr>
+				</thead>
+			<tbody id="pointsBody"></tbody>
+			</table>
+		</div>
+
+		<!-- <div> -->
+			<!-- <h6 class="fw-bold text-success mb-2 text-center">Qualified (Semis)</h6> -->
+			<!-- <ul id="qualifiedList" class="list-group"></ul> -->
+		<!-- </div> -->
 		
-	<div id="loadingOverlay">
-	  <img src="PercentLoading.gif" alt="Loading...">
+		<div id="loadingOverlay">
+		  <img src="PercentLoading.gif" alt="Loading...">
+		</div>
+		  
+		<div class="footer-text mt-4">
+			© 2026 Golden Boys
+		</div>
 	</div>
-	  
-	<div class="footer-text mt-4">
-		© 2026 Golden Boys
-	</div>
-		
+	
+	
 </div>
-</div>
+
 
 <script>
 
@@ -193,6 +220,7 @@ function fetchPoints(){
 
 
 function renderTable(data){
+
     let tbody = document.getElementById("pointsBody");
     tbody.innerHTML="";
 
@@ -200,12 +228,20 @@ function renderTable(data){
 
         let teamName = teamMap[row.team] || row.team;
 
-        let tr = `<tr class="${index<4?'top-team':''}">
+        let rowClass = "";
+        let trophy = "";
+
+        // Highlight Top 2
+        if(index === 0 || index === 1){
+            rowClass = "top-qualified";
+            trophy = `<i class="bi bi-trophy-fill trophy-icon"></i>`;
+        }
+
+        let tr = `<tr class="${rowClass}">
             <td>${index+1}</td>
             <td class="text-start fw-semibold">
-				${teamName}
-				<span class="badge bg-secondary ms-1">${groupMap[row.team]}</span>
-			</td>
+                ${teamName} ${trophy}
+            </td>
             <td>${row.played}</td>
             <td>${row.win}</td>
             <td>${row.loss}</td>
@@ -218,6 +254,7 @@ function renderTable(data){
     });
 	hideLoading();
 }
+
 
 function renderQualified(list){
     let ul = document.getElementById("qualifiedList");
