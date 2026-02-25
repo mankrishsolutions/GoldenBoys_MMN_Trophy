@@ -219,6 +219,7 @@ function renderFixtures(selectedWeek) {
             currentWeek = m.Week;
             const weekId = currentWeek.replace(/\s+/g, '');
 
+			
             container.innerHTML += `
                 <div class="week-title">${currentWeek}</div>
                 <div class="table-responsive mb-3">
@@ -232,6 +233,7 @@ function renderFixtures(selectedWeek) {
                                 <th>Team B</th>
                                 <th>Date</th>
                                 <th>Time</th>
+								<th>Winner</th>
                             </tr>
                         </thead>
                         <tbody id="tbody-${weekId}"></tbody>
@@ -244,6 +246,21 @@ function renderFixtures(selectedWeek) {
             `tbody-${currentWeek.replace(/\s+/g,'')}`
         );
 
+			let resultText = "-";
+
+			if (m.Winner === "A") {
+				resultText = teamMap[m.TeamA] || "Team A";
+			}
+			else if (m.Winner === "B") {
+				resultText = teamMap[m.TeamB] || "Team B";
+			}
+			else if (m.Winner === "T") {
+				resultText = "Tie";
+			}
+			else if (m.Winner === "NR") {
+				resultText = "No Result";
+			}
+			
         tbody.innerHTML += `
             <tr>
                 <td>${m.MatchNo}</td>
@@ -251,8 +268,9 @@ function renderFixtures(selectedWeek) {
                 <td>${teamMap[m.TeamA] || m.TeamA}</td>
                 <td class="vs">VS</td>
                 <td>${teamMap[m.TeamB] || m.TeamB}</td>
-                <td>${m.Date || '-'}</td>
-                <td>${m.Time || '-'}</td>
+				<td>${m.Date || '-'}</td>
+				<td>${m.Time || '-'}</td>
+				<td class="fw-semibold text-success">${resultText}</td>
             </tr>
         `;
     });
