@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Knockout – MMN Golden Boys</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+    background:#f4f6f9;
+    font-family:"Segoe UI",sans-serif;
+    padding:5px;
+}
+.main-card{
+    max-width:900px;
+    margin:auto;
+    border-radius:18px;
+    box-shadow:0 12px 35px rgba(0,0,0,0.15);
+    overflow:hidden;
+    background:#fff;
+}
+.knockout-bg{
+    background:
+        linear-gradient(rgba(255,255,255,0.25),rgba(255,255,255,0.25)),
+        url('BG2.jpg');
+    background-size:cover;
+    background-position:center;
+    padding:16px;
+    border-radius:14px;
+}
+.bracket-box{
+    background:#ffffff;
+    border-radius:14px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    padding:18px;
+    margin-bottom:15px;
+    text-align:center;
+}
+.bracket-title{
+    font-weight:700;
+    margin-bottom:10px;
+}
+.final-box{
+    background:#fff3cd;
+    border:2px solid #ffc107;
+}
+.header-banner-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+}
+.header-banner-img {
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    border-radius: 18px 18px 0 0;
+    position: relative;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="main-card">
+
+    <!-- HEADER -->
+    <div class="header-banner-img">
+        <img src="banner.jpg" alt="MMN Golden Boys Champions Trophy">
+        <button class="btn btn-light btn-sm back-btn"
+                onclick="window.location.assign('index.html')">
+            ← Back
+        </button>
+    </div>
+
+    <!-- BODY -->
+    <div class="card-body p-4">
+
+        <h5 class="mb-3">🏆 Knockout Stage</h5>
+
+        <div class="knockout-bg">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="bracket-box">
+                        <div class="bracket-title">Semi Final 1</div>
+                        <div class="bracket-title" id="semi1"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="bracket-box">
+                        <div class="bracket-title">Semi Final 2</div>
+                        <div class="bracket-title" id="semi2"></div>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-3">
+                    <div class="bracket-box final-box">
+                        <div class="bracket-title">🏆 Final</div>
+                        <div class="bracket-title" id="final"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="text-center text-muted small mt-4">
+            © 2026 Golden Boys
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+const apiURL = "https://script.google.com/macros/s/AKfycbwE-fiDQn2TzNlDSNLi4m42J6f9lZQcoJZ20Kc8fDKJd3ejt8MPhozOXqn3_YRHJ9Ovdw/exec";
+
+async function loadKnockout(){
+
+    const res = await fetch(apiURL + "?action=getKnockoutData");
+    const data = await res.json();
+
+    document.getElementById("semi1").innerHTML =
+        `${data.semi1A} <span class="text-danger fw-bold">VS</span> ${data.semi1B}`;
+
+    document.getElementById("semi2").innerHTML =
+        `${data.semi2A} <span class="text-danger fw-bold">VS</span> ${data.semi2B}`;
+
+    if(data.final && data.final !== ""){
+        document.getElementById("final").innerHTML =
+            `<span class="fw-bold text-success">${data.final}</span>`;
+    }else{
+        document.getElementById("final").innerHTML =
+            `<span class="text-muted">Winner of SF1 vs Winner of SF2</span>`;
+    }
+}
+
+loadKnockout();
+setInterval(loadKnockout,60000);
+</script>
+
+</body>
+</html>
