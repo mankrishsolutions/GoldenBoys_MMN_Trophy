@@ -61,6 +61,24 @@ body{
     position: relative;
 }
 
+
+	#loadingOverlay {
+	  position: fixed;
+	  top: 0; left: 0;
+	  width: 100%; height: 100%;
+	  background: rgba(255,255,255,0.7);
+	  display: none;
+	  align-items: center;
+	  justify-content: center;
+	  z-index: 9999;
+	}
+
+	#loadingOverlay img {
+	  width: 100px;
+	  height: 100px;
+	}
+	
+	
 </style>
 </head>
 
@@ -109,6 +127,12 @@ body{
 
         </div>
 
+		
+		<div id="loadingOverlay">
+		  <img src="PercentLoading.gif" alt="Loading...">
+		</div>
+		  
+		  
         <div class="text-center text-muted small mt-4">
             © 2026 Golden Boys
         </div>
@@ -118,30 +142,41 @@ body{
 </div>
 
 <script>
-const apiURL = "https://script.google.com/macros/s/AKfycbwE-fiDQn2TzNlDSNLi4m42J6f9lZQcoJZ20Kc8fDKJd3ejt8MPhozOXqn3_YRHJ9Ovdw/exec";
+	const apiURL = "https://script.google.com/macros/s/AKfycbwE-fiDQn2TzNlDSNLi4m42J6f9lZQcoJZ20Kc8fDKJd3ejt8MPhozOXqn3_YRHJ9Ovdw/exec";
 
-async function loadKnockout(){
+	async function loadKnockout(){
+		showLoading();
+		const res = await fetch(apiURL + "?action=getKnockoutData");
+		const data = await res.json();
 
-    const res = await fetch(apiURL + "?action=getKnockoutData");
-    const data = await res.json();
+		document.getElementById("semi1").innerHTML =
+			`${data.semi1A} <span class="text-danger fw-bold">VS</span> ${data.semi1B}`;
 
-    document.getElementById("semi1").innerHTML =
-        `${data.semi1A} <span class="text-danger fw-bold">VS</span> ${data.semi1B}`;
+		document.getElementById("semi2").innerHTML =
+			`${data.semi2A} <span class="text-danger fw-bold">VS</span> ${data.semi2B}`;
 
-    document.getElementById("semi2").innerHTML =
-        `${data.semi2A} <span class="text-danger fw-bold">VS</span> ${data.semi2B}`;
+		if(data.final && data.final !== ""){
+			document.getElementById("final").innerHTML =
+				`<span class="fw-bold text-success">${data.final}</span>`;
+		}else{
+			document.getElementById("final").innerHTML =
+				`<span class="text-muted">Winner of SF1 vs Winner of SF2</span>`;
+		}
+		hideLoading();
+	}
 
-    if(data.final && data.final !== ""){
-        document.getElementById("final").innerHTML =
-            `<span class="fw-bold text-success">${data.final}</span>`;
-    }else{
-        document.getElementById("final").innerHTML =
-            `<span class="text-muted">Winner of SF1 vs Winner of SF2</span>`;
-    }
-}
 
-loadKnockout();
-setInterval(loadKnockout,60000);
+	function showLoading() {
+	  document.getElementById('loadingOverlay').style.display = 'flex';
+	}
+
+	function hideLoading() {
+	  document.getElementById('loadingOverlay').style.display = 'none';
+	}
+
+
+	loadKnockout();
+	setInterval(loadKnockout,60000);
 </script>
 
 </body>
